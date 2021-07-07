@@ -1,0 +1,169 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>shut up</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+		#score {
+			position: absolute;
+			left: 8px;
+			top: 8px;
+			font-size: 16px;
+			z-index: 100;
+			color: white;
+			background: 0x8bb5d0;
+			width: 50px;
+			padding: 8px;
+		}
+    </style>
+</head>
+<body>
+<div id="score">0</div>
+<script type="text/javascript">
+var config = {
+    type: Phaser.AUTO,
+    width: 8000,
+    height: 600,
+	backgroundColor: 0x8bb5d0,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+var game = new Phaser.Game(config);
+var camera;
+
+function preload ()
+{
+	this.load.image('man', 'assets/man.png');
+	this.load.image('platform', 'assets/platform.png');
+	this.load.image('waffle', 'assets/waffle.jpg');
+	this.load.image('vilin', 'assets/vilin.png');
+}
+
+function create ()
+{	
+	//score
+	var score = 0;
+	document.getElementById('score').innerHTML = score;
+	
+	//adds player
+	player = this.physics.add.sprite(100, 450, 'man');
+	
+	//enlarges player
+	player.setScale(2);
+	
+	//text
+	this.add.text(50, 50, "Arrow keys to move!");
+	
+	//adds platforms
+	platform1 = this.physics.add.image(100, 300, 'platform');
+	platform2 = this.physics.add.image(550, 200, 'platform');
+	
+	//disables gravity for platforms
+	platform1.body.setAllowGravity(false);
+	platform2.body.setAllowGravity(false);
+	
+	//adds waffles
+	waffle = this.physics.add.image(100, 200, 'waffle');
+	waffle.setScale(0.3);
+	waffle2 = this.physics.add.image(550, 120, 'waffle');
+	waffle2.setScale(0.3);
+	waffle3 = this.physics.add.image(600, 350, 'waffle');
+	waffle3.setScale(0.3);
+	
+	//adds vilin
+	vilin = this.physics.add.image(500, 400, 'vilin');
+	//sets bounce for player
+	player.setBounce(0.2);
+	vilin.setBounce(1);
+	//makes it so the player collides with the world bounds
+	player.setCollideWorldBounds(true);
+	vilin.setCollideWorldBounds(true);
+	//waffles collide world bounds
+	waffle.setCollideWorldBounds(true);
+	waffle2.setCollideWorldBounds(true);
+	waffle3.setCollideWorldBounds(true);
+	
+	//keyboard controls
+	cursors = this.input.keyboard.createCursorKeys();
+	
+	//colliders
+	this.physics.add.collider(player, platform1);
+	this.physics.add.collider(waffle, platform1);
+	this.physics.add.collider(player, platform2);
+	this.physics.add.collider(waffle2, platform2);
+	this.physics.add.collider(vilin, platform2);
+	//disables platforms bounce
+	platform1.setBounce(0);
+	platform2.setBounce(0);
+	
+	//makes platforms immovable
+	platform1.body.immovable = true;
+	platform2.body.immovable = true;
+	
+	//checks for overlap between waffle and player
+	this.physics.add.overlap(player, waffle, collectWaffle, null, this);
+	this.physics.add.overlap(player, waffle2, collectWaffle, null, this);
+	this.physics.add.overlap(player, waffle3, collectWaffle, null, this);
+	this.physics.add.collider(player, vilin, gameOver,null, this);
+	
+	function collectWaffle (player, waffle){
+		waffle.disableBody(true, true);
+		score += 10;
+		document.getElementById('score').innerHTML = score;
+	}
+	
+	camera = this.cameras.cameras[0];
+}
+
+function update ()
+{
+	
+	//moves player
+	if (cursors.left.isDown)
+	{
+		player.setVelocityX(-150);
+		camera.scrollX -= 1;
+		
+	}
+	else if (cursors.right.isDown)
+	{
+		player.setVelocityX(150);
+		camera.scrollX += 1;
+	}
+	else
+    {
+        player.setVelocityX(0);
+    }
+	if (cursors.up.isDown)
+    {
+        player.setVelocityY(-330);
+    }
+	
+
+	
+}
+function gameOver(player, vilin) {
+		this.physics.pause();
+		player.setTint(0xff0000);
+		this.scene.restart();
+		document.getElementById('score').innerHTML = 0;
+	}
+</script>
+
+</body>
+</html>
